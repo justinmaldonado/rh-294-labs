@@ -1,0 +1,36 @@
+---
+- name: Deploy and start Apache HTTPD service
+  hosts: webserver
+  vars:
+    web_pkg: httpd
+    firewall_pkg: firewalld
+    web_service: httpd
+    firewall_service: firewalld
+    python_pkg: python3-PyMySQL
+    rule: http
+
+#############################################################################
+  tasks:
+    - name: Required packages are installed and up to date
+      yum:
+        name:
+          - "{{ web_pkg }}"
+          - "{{ firewall_pkg }}"  
+          
+    - name: The {{firewall_service}} and {{ web_service }} service has started 
+      service:
+        name: "{{ item }}"
+        enabled: True
+        state: started 
+      loop:
+        - {{ firewall_service}}
+        - {{ web_service }}
+
+    - name: web content is in place
+      copy:
+        content: "Example with web content"
+        dest: /var/www/html/index.html
+    
+    - name: make sure firewall rule is in place
+      firewalld:
+        service: {{ rule }}
