@@ -30,7 +30,29 @@
       copy:
         content: "Example with web content"
         dest: /var/www/html/index.html
-    
+   
     - name: make sure firewall rule is in place
       firewalld:
         service: {{ rule }}
+
+     - name: The {{ firewall_service }} service is started and enabled
+       service:
+         name: "{{ firewall_service }}"
+         enabled: true
+         state: started
+         
+     - name: The {{ web_service }} service is started and enabled
+       service:
+         name: "{{ web_service }}"
+         enabled: true
+         state: started
+        
+        
+      - name: Verify the Apache HTTP service
+        hosts: localhost
+        become: false
+        tasks:
+          - name: Ensure the webserver is reachable
+            uri: http://servera.lab.example.com
+            status_code: 200
+              
