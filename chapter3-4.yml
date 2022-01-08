@@ -86,9 +86,9 @@
 #################################################
 
     - name: create index.html
-          copy:
-            content: "{{ ansible_facts['fqdn'] }} ({{ ansible_facts['default_ipv4']['address'] }}) has been customized by Ansible.\n"
-            dest: "{{ web_root }}/index.html"
+      copy:
+        content: "{{ ansible_facts['fqdn'] }} ({{ ansible_facts['default_ipv4']['address'] }}) has been customized by Ansible.\n"
+        dest: "{{ web_root }}/index.html"
 
 #################################################
 #       This is the 7th task, service module    #
