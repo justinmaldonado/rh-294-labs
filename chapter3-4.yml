@@ -2,21 +2,160 @@
 
 #################################################
 #       This is the first play                  #
-#                                               #
 #################################################
 
-- name: Gather Facts
-  hosts:
-  gather_facts: True
+- name: install and configure webserver with basic auth  
+  hosts: webserver
+  vars:
+    firewall_pkg: firewalld
+    firewall_svc: firewalld
+    web_pkg: httpd
+    web_svc: httpd
+    ssl_pkg: mod_ssl
+    httpdconf_src: files/httpd.conf
+    httpdconf_dest: /etc/httpd/conf/httpd.conf
+    htaccess_src: files/.htaccess
+    secrets_dir: /etc/httpd/secrets
+    secrets_src: files/htpasswd
+    secrets_dest: "{{ secrets_dir }}/htpasswd"
+    web_root: /var/www/html
+  
+#################################################
+#       This is the first task, yum module      #
+#################################################
   tasks:
  
+    - name:  latest version of packages installed
+      yum:
+        name:
+          - "{{ firewall_pkg }}"
+          - "{{ web_pkg }}"
+          - "{{ ssl_pkg }}"
+        state: latest
+
 #################################################
-#       This is the first task                  #
-#                                               #
+#       This is the 2nd task, copy module       #
 #################################################
 
-  - name:  gather_facts
-    
+    - name: configure web service
+      copy:
+        src: "{{ httpdconf_src }}"
+        dest: "{{ httpdconf_dest }}"
+        owner: root
+        group: root
+        mode: 0644
+
+#################################################
+#       This is the 3rd task, file module       #
+#################################################
+
+    - name: secrets directory exists
+      file:
+        path: "{{ secrets_dir }}"
+        state: directory
+        owner: apache
+        group: apache
+        mode: 0500
+
+#################################################
+#       This is the 4th task, copy module       #
+#################################################
+
+    - name: htpasswd file exists
+      copy:
+        src: "{{ secrets_src }}"
+        dest: "{{ secrets_dest }}"
+        owner: apache
+        group: apache
+        mode: 0400
+
+#################################################
+#       This is the 5th task, copy module       #
+#################################################
+
+    - name: .htaccess file installed in docroot
+      copy:
+        src: "{{ htaccess_src }}"
+        dest: "{{ web_root }}/.htaccess"
+        owner: apache
+        group: apache
+        mode: 0400
+
+#################################################
+#       This is the 6th task, copy module       #
+#################################################
+
+    - name: create index.html
+          copy:
+            content: "{{ ansible_facts['fqdn'] }} ({{ ansible_facts['default_ipv4']['address'] }}) has been customized by Ansible.\n"
+            dest: "{{ web_root }}/index.html"
+
+#################################################
+#       This is the 7th task, service module    #
+#################################################
+
+    - name: firewall service enabled and started
+      service:
+        name: "{{ firewall_svc }}"
+        state: started
+        enabled: true
+
+#################################################
+#       This is the 8th task, firewall module   #
+#################################################
+
+    - name: open the port for the web server
+      firewalld:
+        service: https
+        state: enabled
+        immediate: true
+        permanent: true
+
+#################################################
+#       This is the 8th task, service module    #
+#################################################
+
+- name: web service enabled and started
+  service:
+    name: "{{ web_svc }}"
+    state: started
+    enabled: true
 
 
-   
+#################################################
+#       This is the second play                 #
+#################################################
+
+
+- name: test web server with basic auth
+  hosts: localhost
+  become: no
+  vars:
+    web_user: guest
+  vars_files:
+    - /vars/secret.yml
+
+#################################################
+#       This is the first play                  #
+#################################################
+
+  tasks:
+
+    - name: connect to web server using basic auth
+      uri:
+        url: https://serverb.lab.example.com
+        user: "{{ web_user }}"
+        password: "{{ web_pass }}"
+        validate_certs: no
+        force_basic_auth: yes
+        return_content: yes
+        status_code: 200
+      register: auth_test
+
+#################################################
+#       This is the 2nd play                    #
+#################################################
+
+    - name: This is the debug part 
+      debug:
+        var: auth_test.content
