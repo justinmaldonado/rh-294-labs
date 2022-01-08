@@ -115,11 +115,11 @@
 #       This is the 8th task, service module    #
 #################################################
 
-- name: web service enabled and started
-  service:
-    name: "{{ web_svc }}"
-    state: started
-    enabled: true
+    - name: web service enabled and started
+      service:
+        name: "{{ web_svc }}"
+        state: started
+        enabled: true
 
 
 #################################################
