@@ -1,0 +1,20 @@
+---
+
+###############################################
+#            Setting up the play              #
+###############################################
+
+-  name: This is the first play
+   hosts: database_dev
+   vars:
+     mariadb-packages:
+       -  mariadb-server
+       -  python-PythonMySQL
+
+
+    tasks:
+      - name: MariaDB packages are installed
+        yum:
+          name: "{{ item }}"
+          state: present
+        
