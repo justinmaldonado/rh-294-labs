@@ -12,14 +12,14 @@
     config_file_dst: /etc/my.cnf
 
   tasks:
-    - name: " {{ db_packages }}" are installed
+    - name: " {{ db_packages }} are installed"
       yum:
         name: "{{ db_packages }}"
         state: present
       notify:
         - set db password
 
-      - name: "{{ dbservice }}" will be installed
+      - name: Make sure the database service is running
         service: 
           name: "{{ dbservice }}"
           state: started
