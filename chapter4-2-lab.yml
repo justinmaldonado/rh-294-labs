@@ -19,21 +19,21 @@
       notify:
         - set db password
 
-      - name: Make sure the database service is running
-        service: 
-          name: "{{ dbservice }}"
-          state: started
-          enabled: true
+    - name: Make sure the database service is running
+      service: 
+        name: "{{ dbservice }}"
+        state: started
+        enabled: true
 
-      - name: The {{ config_file_dst }} file has been installed
-        get_url:
-          url: "{{ config_file_url }}"
-          dest: "{{ config_file_dst }}"
-          owner: mysql
-          group: mysql
-          force: yes
-          notify:
-            - restart db service
+    - name: The {{ config_file_dst }} file has been installed
+      get_url:
+        url: "{{ config_file_url }}"
+        dest: "{{ config_file_dst }}"
+        owner: mysql
+        group: mysql
+        force: yes
+        notify:
+          - restart db service
 
   handlers:
     - name: restart db service
