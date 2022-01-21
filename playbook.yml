@@ -1,0 +1,20 @@
+---
+
+- name: This is the name of the play
+  hosts: databases
+  vars:
+    web_package: http
+    db_package: mariadb-server
+    db_service: mariadb
+
+  tasks:
+    - name: This will install {{ web_package }} using yum
+      yum:
+        name: "{{ web_package }}"
+        state: present
+      
+    - name: This will install {{ db_package }} using yum
+      yum:
+        name: "{{ db_package }}"
+        state: present
+      
